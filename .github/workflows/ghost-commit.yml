@@ -1,0 +1,42 @@
+name: Ghost Commit Auto Update
+
+on:
+  schedule:
+    # Menjalankan workflow setiap hari pada jam 00:00 UTC (07:00 WIB)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Mengaktifkan tombol manual "Run workflow" di GitHub Actions
+
+permissions:
+  contents: write
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run Ghost Commit Script
+        run: node GhostCommit.js
+        env:
+          TOTAL_COMMITS: "3" # Jumlah commit yang dibuat setiap harinya (agar terlihat natural)
+
+      - name: Push Changes
+        run: |
+          git push origin HEAD:main
